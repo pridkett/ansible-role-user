@@ -1,0 +1,28 @@
+---
+- name: Create a user
+  user:
+    name: "{{ username }}"
+
+- name: Retrieve SSH secrets from vault
+  include_vars:
+    file: secrets.yml
+
+- name: Copy SSH private key
+  copy:
+    content: "{{ ssh_private_key }}"
+    dest: "/home/{{ username }}/.ssh/id_rsa"
+    owner: "{{ username }}"
+    mode: '0600'
+
+- name: Copy SSH public key
+  copy:
+    content: "{{ ssh_public_key }}"
+    dest: "/home/{{ username }}/.ssh/id_rsa.pub"
+    owner: "{{ username }}"
+    mode: '0644'
+
+- name: Add authorized keys
+  authorized_key:
+    user: "{{ username }}"
+    key: "{{ item }}"
+  with_items: "{{ authorized_keys }}"
